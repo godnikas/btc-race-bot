@@ -9,8 +9,13 @@
 //
 //   - Entry: the close rises at least 1.50% above the lowest close of the
 //     last 15 minutes (a recovery breaking out of a fresh low). Full size:
-//     all cash. A weaker 0.80% rise is a feeler: 25% of cash, so the bot
-//     still trades on quieter days and still has dry powder.
+//     all cash. A weaker 0.80% rise is a feeler: 2.5% of cash, so the bot
+//     still trades on quieter days and still has dry powder. The feeler is
+//     deliberately tiny: on the dev window every weak-signal feeler that
+//     never confirmed was stopped out for a small loss, so a 25% feeler
+//     bled ~$20 across five false bounces while the one real bounce paid
+//     ~$26. At 2.5% the false bounces cost almost nothing and the top-up
+//     still converts a confirming bounce to full size.
 //   - Top-up: while holding a feeler, if the strong 1.50% signal fires,
 //     spend the remaining cash to go full size, blending the entry price.
 //   - Exit: take profit at +3.00% over the (blended) entry fill price, or
@@ -22,7 +27,9 @@
 //     the same data give the same orders.
 //
 // Local grade on the published dev window (exact replay, fees + slippage +
-// pool impact): net PnL +$22.41, max drawdown 0.86%, 15 trades.
+// pool impact): net PnL +$29.71, max drawdown 0.46%, 15 trades. v1 ("Clear
+// Delta", 25% feeler) scored +$22.41 / 0.86% / 15 trades on the same window;
+// the only change is the feeler size, 25% -> 2.5% of cash.
 // Baselines on the same window: buy-and-hold -$44.01, EMA-cross -$134.95,
 // momentum -$40.92, RSI-Bollinger -$57.37, ADX-momentum -$86.60.
 
@@ -34,9 +41,9 @@ const LOOKBACK_BARS = 15;
 const STRONG_BPS = 150;
 /** Weak breakout (feeler): rise above the 15-minute low, in basis points. */
 const WEAK_BPS = 80;
-/** Feeler size: this share of cash. */
+/** Feeler size: this share of cash (v2: 2.5%, down from v1's 25%). */
 const WEAK_SIZE_NUM = 1;
-const WEAK_SIZE_DEN = 4;
+const WEAK_SIZE_DEN = 40;
 /** Take profit over the entry fill price, in basis points. */
 const TAKE_PROFIT_BPS = 300;
 /** Trailing stop below the peak close since entry, in basis points. */
